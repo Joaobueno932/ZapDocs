@@ -117,7 +117,7 @@
               <td>
                 <span class="badge badge-{{ u.role }}">{{ u.role }}</span>
               </td>
-              <td class="text-sm">{{ u.created_at[:10] if u.created_at else '—' }}</td>
+              <td class="text-sm">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at and u.created_at.strftime is defined else (u.created_at|string)[:10] if u.created_at else '—' }}</td>
               <td style="text-align:center;font-weight:600;color:var(--primary)">
                 {{ u.pdf_count or 0 }}
               </td>
