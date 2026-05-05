@@ -556,15 +556,18 @@ def media_player(job_id, filename):
     filepath  = os.path.join(TEMP_DIR, job_id, 'midia', filename)
     ext       = os.path.splitext(filename)[1].lower()
 
-    AUDIO_EXTS = {'.opus', '.mp3', '.ogg', '.m4a', '.aac', '.wav', '.oga'}
-    VIDEO_EXTS = {'.mp4', '.avi', '.mov', '.mkv', '.3gp', '.webm'}
+    AUDIO_EXTS  = {'.opus', '.mp3', '.ogg', '.m4a', '.aac', '.wav', '.oga'}
+    VIDEO_EXTS  = {'.mp4', '.avi', '.mov', '.mkv', '.3gp', '.webm'}
+    IMAGEM_EXTS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}
 
     if ext in AUDIO_EXTS:
         media_type = 'audio'
     elif ext in VIDEO_EXTS:
         media_type = 'video'
+    elif ext in IMAGEM_EXTS:
+        media_type = 'imagem'
     else:
-        media_type = 'audio'
+        media_type = 'documento'
 
     file_exists = os.path.exists(filepath)
     media_src   = url_for('serve_media', job_id=job_id, filename=filename) if file_exists else None

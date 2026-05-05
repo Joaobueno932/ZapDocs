@@ -309,6 +309,8 @@ class RendererPDF:
             self._balao_audio(msg, eh_grupo)
         elif tipo_midia == 'video':
             self._balao_video(msg, eh_grupo)
+        elif tipo_midia == 'documento':
+            self._balao_documento(msg, eh_grupo)
         else:
             self._balao_generico(msg, eh_grupo)
 
@@ -604,6 +606,118 @@ class RendererPDF:
             msg.midia.caminho,
             thumb_x, thumb_y,
             thumb_x + thumb_w, thumb_y + ALTURA_THUMB
+        )
+
+        self.y -= altura_balao + ESPACO_ENTRE_MSGS
+
+    # ── Balão de documento ────────────────────────────────────────────────────
+
+    def _balao_documento(self, msg: Mensagem, eh_grupo: bool):
+        """
+        Layout:  [ícone ext]  nome_do_arquivo.pdf
+                              HH:MM vv
+        Clicável: abre/baixa o documento.
+        """
+        meu = self._eh_meu(msg.remetente) if msg.remetente else False
+        cor_fundo = COR_BALAO_EU if meu else COR_BALAO_OUTRO
+        largura_balao = self.largura_max_balao
+
+        nome_str = ''
+        if eh_grupo and not meu and msg.remetente:
+            nome_str = msg.remetente
+
+        hora_str = formatar_horario(msg.timestamp) + ('  vv' if meu else '')
+        largura_hora = self.c.stringWidth(hora_str, FONTE_NORMAL, TAMANHO_HORA)
+
+        nome_arq = msg.midia.nome_arquivo or 'documento'
+        ext = os.path.splitext(nome_arq)[1].upper().lstrip('.') or 'DOC'
+        largura_interna = largura_balao - 2 * PADDING_H
+        nome_exibido = nome_arq
+        while (self.c.stringWidth(nome_exibido, FONTE_NORMAL, TAMANHO_TEXTO) > largura_interna - 40 * pt
+               and len(nome_exibido) > 10):
+            nome_exibido = nome_exibido[:len(nome_exibido) - 4] + '...'
+
+        ICONE_W  = 32 * pt
+        ICONE_H  = 38 * pt
+        ALTURA_ICONE_LINHA = ICONE_H + 4 * pt
+        ALTURA_NOME = TAMANHO_TEXTO * 1.6
+        altura_nome_rem = (TAMANHO_NOME * 1.4) if nome_str else 0
+        altura_balao = (PADDING_V + altura_nome_rem + ALTURA_ICONE_LINHA
+                        + ALTURA_NOME + TAMANHO_HORA * 1.2 + PADDING_V)
+
+        self._garantir_espaco(altura_balao + ESPACO_ENTRE_MSGS)
+        x_balao_pos = (self.largura_pagina - MARGEM_LATERAL - largura_balao
+                       if meu else MARGEM_LATERAL)
+        y_topo = self.y
+
+        self._desenhar_fundo_balao(x_balao_pos, y_topo, largura_balao, altura_balao,
+                                    cor_fundo, meu)
+
+        cursor_y = y_topo - PADDING_V
+
+        if nome_str:
+            cursor_y -= TAMANHO_NOME
+            self.c.setFillColor(_cor_para_nome(msg.remetente))
+            self.c.setFont(FONTE_NEGRITO, TAMANHO_NOME)
+            self.c.drawString(x_balao_pos + PADDING_H, cursor_y, nome_str)
+            cursor_y -= TAMANHO_NOME * 0.4
+
+        # Ícone de documento
+        ix = x_balao_pos + PADDING_H
+        iy = cursor_y - ICONE_H
+        dobra = 8 * pt
+        cor_icone = colors.HexColor('#4A90D9')
+        self.c.setFillColor(cor_icone)
+        self.c.setStrokeColor(cor_icone)
+        # corpo do documento (retângulo com canto dobrado)
+        p = self.c.beginPath()
+        p.moveTo(ix, iy)
+        p.lineTo(ix, iy + ICONE_H)
+        p.lineTo(ix + ICONE_W - dobra, iy + ICONE_H)
+        p.lineTo(ix + ICONE_W, iy + ICONE_H - dobra)
+        p.lineTo(ix + ICONE_W, iy)
+        p.close()
+        self.c.drawPath(p, fill=1, stroke=0)
+        # triângulo da dobra
+        self.c.setFillColor(colors.HexColor('#FFFFFF'))
+        self.c.setFillAlpha(0.35)
+        p2 = self.c.beginPath()
+        p2.moveTo(ix + ICONE_W - dobra, iy + ICONE_H)
+        p2.lineTo(ix + ICONE_W - dobra, iy + ICONE_H - dobra)
+        p2.lineTo(ix + ICONE_W, iy + ICONE_H - dobra)
+        p2.close()
+        self.c.drawPath(p2, fill=1, stroke=0)
+        self.c.setFillAlpha(1.0)
+        # rótulo da extensão dentro do ícone
+        ext_label = ext[:4]
+        tamanho_ext = 7 * pt
+        larg_ext = self.c.stringWidth(ext_label, FONTE_NEGRITO, tamanho_ext)
+        self.c.setFillColor(colors.white)
+        self.c.setFont(FONTE_NEGRITO, tamanho_ext)
+        self.c.drawString(ix + (ICONE_W - larg_ext) / 2,
+                          iy + ICONE_H / 2 - tamanho_ext / 2,
+                          ext_label)
+
+        # Nome do arquivo ao lado do ícone
+        texto_x = ix + ICONE_W + 6 * pt
+        texto_y = iy + ICONE_H / 2
+        self.c.setFillColor(colors.black)
+        self.c.setFont(FONTE_NORMAL, TAMANHO_TEXTO)
+        self.c.drawString(texto_x, texto_y, nome_exibido)
+
+        cursor_y -= ALTURA_ICONE_LINHA
+
+        # Horário
+        x_hora = x_balao_pos + largura_balao - PADDING_H - largura_hora
+        self.c.setFillColor(COR_HORA)
+        self.c.setFont(FONTE_NORMAL, TAMANHO_HORA)
+        self.c.drawString(x_hora, cursor_y - TAMANHO_HORA * 0.5, hora_str)
+
+        # Anotação clicável sobre o balão inteiro
+        self._link_arquivo(
+            msg.midia.caminho,
+            x_balao_pos, y_topo - altura_balao,
+            x_balao_pos + largura_balao, y_topo
         )
 
         self.y -= altura_balao + ESPACO_ENTRE_MSGS

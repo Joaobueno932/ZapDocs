@@ -79,8 +79,10 @@
       padding: 4px 12px;
       border-radius: 99px;
     }
-    .type-audio { background: #d1fae5; color: #065f46; }
-    .type-video { background: #dbeafe; color: #1e40af; }
+    .type-audio     { background: #d1fae5; color: #065f46; }
+    .type-video     { background: #dbeafe; color: #1e40af; }
+    .type-documento { background: #fef3c7; color: #92400e; }
+    .type-imagem    { background: #ede9fe; color: #5b21b6; }
 
     /* ── Divider ────────────────────────────────────────────── */
     .divider { height: 1px; background: #f0f0f0; margin-bottom: 24px; }
@@ -166,6 +168,33 @@
 
     .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
+    /* ── Document card ─────────────────────────────────────── */
+    .doc-wrap {
+      background: linear-gradient(135deg, #fffbeb, #fef9ec);
+      border: 1.5px solid #fde68a;
+      border-radius: 16px;
+      padding: 20px 20px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .doc-icon { width: 48px; height: 56px; flex-shrink: 0; position: relative; }
+    .doc-icon svg { width: 48px; height: 56px; }
+    .doc-ext-label {
+      position: absolute;
+      top: 55%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 9px; font-weight: 800;
+      color: white; letter-spacing: .4px; text-transform: uppercase;
+    }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-filename {
+      font-size: 13px; font-weight: 600; color: #111827;
+      word-break: break-all; line-height: 1.4; margin-bottom: 3px;
+    }
+    .doc-hint { font-size: 11px; color: #9ca3af; }
+
     /* ── Error state ────────────────────────────────────────── */
     .error-msg {
       color: #dc2626;
@@ -218,6 +247,10 @@
   <div class="media-icon">
     {% if media_type == 'video' %}
     <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    {% elif media_type == 'documento' %}
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+    {% elif media_type == 'imagem' %}
+    <svg viewBox="0 0 24 24"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>
     {% else %}
     <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
     {% endif %}
@@ -226,7 +259,10 @@
   <div class="file-name">{{ filename }}</div>
   <div class="badge-row">
     <span class="file-type type-{{ media_type }}">
-      {% if media_type == 'video' %}Vídeo{% else %}Áudio{% endif %}
+      {% if media_type == 'video' %}Vídeo
+      {% elif media_type == 'documento' %}Documento
+      {% elif media_type == 'imagem' %}Imagem
+      {% else %}Áudio{% endif %}
     </span>
   </div>
 
@@ -244,6 +280,26 @@
           <source src="{{ media_src }}">
           Seu navegador não suporta reprodução de vídeo.
         </video>
+      </div>
+    {% elif media_type == 'documento' %}
+      {% set ext = filename.rsplit('.', 1)[-1].upper() if '.' in filename else 'DOC' %}
+      <div class="doc-wrap">
+        <div class="doc-icon">
+          <svg viewBox="0 0 48 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 0h26l10 10v46H6V0z" fill="#4A90D9"/>
+            <path d="M32 0l10 10H32V0z" fill="#FFFFFF" fill-opacity="0.35"/>
+          </svg>
+          <span class="doc-ext-label">{{ ext[:4] }}</span>
+        </div>
+        <div class="doc-info">
+          <div class="doc-filename">{{ filename }}</div>
+          <div class="doc-hint">Clique em "Baixar arquivo" para abrir</div>
+        </div>
+      </div>
+    {% elif media_type == 'imagem' %}
+      <div style="text-align:center;margin-bottom:24px;">
+        <img src="{{ media_src }}" alt="{{ filename }}"
+             style="max-width:100%;max-height:320px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.15);">
       </div>
     {% else %}
       <div class="audio-wrap">
