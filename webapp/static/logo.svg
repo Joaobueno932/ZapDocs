@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="zapdocs-bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#041f1b"/>
+      <stop offset="100%" stop-color="#0d5a50"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="100" height="100" rx="22" fill="url(#zapdocs-bg)"/>
+
+  <!-- Bold Z shape (Zap + paper fold) -->
+  <path d="M 20 24 L 80 24 L 20 76 L 80 76"
+        fill="none" stroke="white" stroke-width="11"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Green lightning badge (bottom-right) -->
+  <circle cx="78" cy="78" r="16" fill="#25D366"/>
+
+  <!-- Mini lightning bolt inside badge -->
+  <path d="M 80 69 L 73 78 L 77 78 L 74 87 L 83 77 L 79 77 Z" fill="white"/>
+</svg>

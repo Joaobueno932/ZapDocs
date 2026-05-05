@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapDocs — Usuários</title>
+  <style>.sidebar-brand-text h2 span{color:#25D366}</style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background:none;padding:2px">
+          <svg viewBox="0 0 100 100" width="36" height="36">
+            <defs>
+              <linearGradient id="admin-bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#041f1b"/>
+                <stop offset="100%" stop-color="#0d5a50"/>
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="22" fill="url(#admin-bg)"/>
+            <path d="M 20 24 L 80 24 L 20 76 L 80 76" fill="none" stroke="white" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="78" cy="78" r="16" fill="#25D366"/>
+            <path d="M 80 69 L 73 78 L 77 78 L 74 87 L 83 77 L 79 77 Z" fill="white"/>
+          </svg>
+        </div>
+        <div class="sidebar-brand-text">
+          <h2><span>Zap</span>Docs</h2>
+          <span>v2.0</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu</div>
+      <a href="/dashboard" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Converter
+      </a>
+      <a href="/admin" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Gerenciar Usuários
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ user_name[0]|upper }}</div>
+        <div class="user-info">
+          <div class="user-info-name">{{ user_name }}</div>
+          <div class="user-info-role">admin</div>
+        </div>
+        <a href="/logout" class="logout-btn" title="Sair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────── -->
+  <div class="main-content">
+    <div class="page-header">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1>Gerenciar Usuários</h1>
+          <p>Crie e gerencie os usuários com acesso ao sistema.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-create')" style="width:auto; margin-top:0">
+          + Novo Usuário
+        </button>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Usuário</th>
+              <th>Função</th>
+              <th>Criado em</th>
+              <th style="text-align:center">PDFs Gerados</th>
+              <th style="text-align:center">Limite</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>
+                <div class="flex items-center gap-8">
+                  <div class="user-avatar" style="width:32px;height:32px;font-size:12px;background:linear-gradient(135deg,#075E54,#25D366)">
+                    {{ (u.name or u.username)[0]|upper }}
+                  </div>
+                  {{ u.name or '—' }}
+                </div>
+              </td>
+              <td><code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px">{{ u.username }}</code></td>
+              <td>
+                <span class="badge badge-{{ u.role }}">{{ u.role }}</span>
+              </td>
+              <td class="text-sm">{{ u.created_at[:10] if u.created_at else '—' }}</td>
+              <td style="text-align:center;font-weight:600;color:var(--primary)">
+                {{ u.pdf_count or 0 }}
+              </td>
+              <td style="text-align:center">
+                {% if u.pdf_limit is none %}
+                  <span style="color:#9ca3af;font-size:18px">∞</span>
+                {% else %}
+                  <span style="font-weight:600">{{ u.pdf_limit }}</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge badge-{{ 'active' if u.active else 'inactive' }}">
+                  {{ 'Ativo' if u.active else 'Inativo' }}
+                </span>
+              </td>
+              <td>
+                <div class="flex gap-8">
+                  <button class="btn btn-secondary btn-sm"
+                          onclick="openLimitModal({{ u.id }}, '{{ u.username }}', {{ u.pdf_count or 0 }}, {{ u.pdf_limit if u.pdf_limit is not none else 'null' }})">
+                    PDFs
+                  </button>
+                  <button class="btn btn-secondary btn-sm"
+                          onclick="openResetModal({{ u.id }}, '{{ u.username }}')">
+                    Senha
+                  </button>
+                  {% if u.id != current_id %}
+                    {% if u.active %}
+                    <button class="btn btn-danger btn-sm"
+                            onclick="deleteUser({{ u.id }}, '{{ u.username }}')">
+                      Desativar
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm"
+                            onclick="activateUser({{ u.id }}, '{{ u.username }}')">
+                      Reativar
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-sm"
+                            style="background:#1a1a1a;color:#f85149;border:1px solid #3d1a1a"
+                            onclick="permanentDelete({{ u.id }}, '{{ u.username }}')">
+                      Excluir
+                    </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-sm mt-8">{{ users|length }} usuário(s) cadastrado(s). Apenas administradores podem criar novos acessos.</p>
+    </div>
+  </div>
+
+</div><!-- /app-layout -->
+
+<!-- ── Modal: Criar usuário ──────────────────────────────────────────────── -->
+<div id="modal-create" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Novo Usuário</h2>
+      <button class="modal-close" onclick="closeModal('modal-create')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-create-user">
+      <div class="form-group">
+        <label>Nome completo</label>
+        <input class="form-control" type="text" id="new-name" placeholder="Ex: João Silva">
+      </div>
+      <div class="form-group">
+        <label>Usuário <span style="color:var(--red)">*</span></label>
+        <input class="form-control" type="text" id="new-username" placeholder="Ex: joao.silva" required>
+      </div>
+      <div class="form-group">
+        <label>Senha <span style="color:var(--red)">*</span></label>
+        <input class="form-control" type="password" id="new-password" placeholder="Mínimo 6 caracteres" required>
+      </div>
+      <div class="form-group">
+        <label>Função</label>
+        <select class="form-control" id="new-role">
+          <option value="user">Usuário</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create')">Cancelar</button>
+        <button type="submit" class="btn btn-primary" style="width:auto">Criar Usuário</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Modal: Gerenciar PDFs ──────────────────────────────────────────────── -->
+<div id="modal-limit" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Gerenciar PDFs</h2>
+      <button class="modal-close" onclick="closeModal('modal-limit')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <input type="hidden" id="limit-user-id">
+
+    <p class="text-sm mb-16">Usuário: <strong id="limit-user-name"></strong></p>
+
+    <div style="display:flex;gap:16px;margin-bottom:20px">
+      <div style="flex:1;background:#f3f4f6;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:28px;font-weight:700;color:var(--primary)" id="limit-count-display">0</div>
+        <div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-top:2px">PDFs gerados</div>
+      </div>
+      <div style="flex:1;background:#f3f4f6;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:28px;font-weight:700;color:#374151" id="limit-limit-display">∞</div>
+        <div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-top:2px">Limite atual</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="form-group mt-16">
+      <label>Definir novo limite <span class="text-sm">(deixe em branco para ilimitado)</span></label>
+      <input class="form-control" type="number" id="limit-set-value" min="0" placeholder="Ex: 50">
+    </div>
+
+    <div class="form-group">
+      <label>Adicionar PDFs ao limite atual</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="form-control" type="number" id="limit-add-value" min="1" placeholder="Ex: 10" style="flex:1">
+        <button class="btn btn-secondary" type="button" onclick="submitLimitAdd()" style="white-space:nowrap">+ Adicionar</button>
+      </div>
+      <p class="text-sm mt-4">Se o limite atual for ∞, será definido apenas com o valor adicionado.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-limit')">Cancelar</button>
+      <button type="button" class="btn btn-primary" style="width:auto" onclick="submitLimitSet()">Salvar Limite</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Redefinir senha ─────────────────────────────────────────────── -->
+<div id="modal-reset" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Redefinir Senha</h2>
+      <button class="modal-close" onclick="closeModal('modal-reset')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <input type="hidden" id="reset-user-id">
+    <p class="text-sm mb-16">Definir nova senha para <strong id="reset-user-name"></strong></p>
+
+    <div class="form-group">
+      <label>Nova senha <span style="color:var(--red)">*</span></label>
+      <input class="form-control" type="password" id="reset-password" placeholder="Mínimo 6 caracteres">
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-reset')">Cancelar</button>
+      <button type="button" class="btn btn-primary" style="width:auto" onclick="submitReset()">Salvar Senha</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

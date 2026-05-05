@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapDocs — Converter</title>
+  <style>.sidebar-brand-text h2 span{color:#25D366}</style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background:none;padding:2px">
+          <svg viewBox="0 0 100 100" width="36" height="36">
+            <defs>
+              <linearGradient id="dash-bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#041f1b"/>
+                <stop offset="100%" stop-color="#0d5a50"/>
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="22" fill="url(#dash-bg)"/>
+            <path d="M 20 24 L 80 24 L 20 76 L 80 76" fill="none" stroke="white" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="78" cy="78" r="16" fill="#25D366"/>
+            <path d="M 80 69 L 73 78 L 77 78 L 74 87 L 83 77 L 79 77 Z" fill="white"/>
+          </svg>
+        </div>
+        <div class="sidebar-brand-text">
+          <h2><span>Zap</span>Docs</h2>
+          <span>v2.0</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu</div>
+
+      <a href="/dashboard" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Converter
+      </a>
+
+      {% if role == 'admin' %}
+      <a href="/admin" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Gerenciar Usuários
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ user_name[0]|upper }}</div>
+        <div class="user-info">
+          <div class="user-info-name">{{ user_name }}</div>
+          <div class="user-info-role">{{ role }}</div>
+        </div>
+        <a href="/logout" class="logout-btn" title="Sair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────── -->
+  <div class="main-content">
+    <div class="page-header">
+      <h1>Converter Conversa</h1>
+      <p>Importe o arquivo ZIP exportado pelo WhatsApp e gere um documento PDF fiel.</p>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Upload card -->
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+          </svg>
+          Selecionar arquivo
+        </div>
+
+        <div id="dropzone" class="dropzone">
+          <div class="dropzone-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+          </div>
+          <h3>Arraste o ZIP aqui</h3>
+          <p>ou clique para selecionar o arquivo exportado pelo WhatsApp</p>
+        </div>
+
+        <input type="file" id="file-input" accept=".zip">
+        <input type="hidden" id="file-input-hidden">
+
+        <!-- Créditos -->
+        {% if creditos is none %}
+        <div class="credits-bar credits-unlimited mt-16">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Créditos: <strong>ilimitados</strong></span>
+          <span class="credits-used">{{ pdf_count }} gerado{{ 's' if pdf_count != 1 else '' }}</span>
+        </div>
+        {% elif creditos == 0 %}
+        <div class="credits-bar credits-empty mt-16">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Sem créditos disponíveis — contate o administrador.</span>
+          <span class="credits-used">{{ pdf_count }}/{{ pdf_limit }} usados</span>
+        </div>
+        {% else %}
+        <div class="credits-bar {% if creditos <= 3 %}credits-low{% else %}credits-ok{% endif %} mt-16">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Créditos disponíveis: <strong>{{ creditos }}</strong></span>
+          <span class="credits-used">{{ pdf_count }}/{{ pdf_limit }} usados</span>
+        </div>
+        {% endif %}
+
+        <div class="mt-16">
+          <button id="btn-convert" class="btn btn-primary" onclick="startConvert()"
+                  {% if creditos is not none and creditos == 0 %}disabled{% endif %}>
+            Converter para PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div id="progress-section" class="progress-section mt-16">
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Processando...
+          </div>
+          <p id="progress-msg" class="text-sm mb-16">Iniciando...</p>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar indeterminate"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="result-card" class="result-card mt-16">
+        <div class="card">
+          <div class="card-title" style="color: var(--green)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            PDF gerado com sucesso!
+          </div>
+
+          <p class="text-sm mb-16">Conversa: <strong id="stat-name"></strong></p>
+
+          <div class="result-stats">
+            <div class="stat-item">
+              <div class="stat-value" id="stat-msgs">—</div>
+              <div class="stat-label">Mensagens</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="stat-pages">—</div>
+              <div class="stat-label">Páginas</div>
+            </div>
+            <div class="stat-item" style="grid-column: span 2">
+              <div class="stat-value" style="font-size:15px" id="stat-period">—</div>
+              <div class="stat-label">Período</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="stat-media">—</div>
+              <div class="stat-label">Mídias</div>
+            </div>
+          </div>
+
+          <button id="btn-download" class="btn btn-primary">
+            ⬇ Baixar PDF
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+
+</div><!-- /app-layout -->
+
+<div id="toast-container"></div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
