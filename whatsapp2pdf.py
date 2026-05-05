@@ -43,8 +43,14 @@ def ler_zip(caminho_zip: str) -> tuple[str, dict]:
                     break
 
             if arquivo_chat is None:
+                for nome in nomes:
+                    if os.path.basename(nome).lower().endswith('.txt'):
+                        arquivo_chat = nome
+                        break
+
+            if arquivo_chat is None:
                 sys.exit(
-                    f'Erro: o ZIP não contém "{ARQUIVO_CHAT}".\n'
+                    f'Erro: o ZIP não contém "{ARQUIVO_CHAT}" nem nenhum arquivo .txt.\n'
                     'Certifique-se de que é um ZIP exportado pelo WhatsApp.'
                 )
 
