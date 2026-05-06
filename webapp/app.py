@@ -571,15 +571,14 @@ def media_player(job_id, filename):
 
     file_exists = os.path.exists(filepath)
     media_src   = url_for('serve_media', job_id=job_id, filename=filename) if file_exists else None
-
-    if ext == '.pdf' and file_exists:
-        return redirect(media_src)
+    direct      = request.args.get('direct', '0') == '1'
 
     return render_template('player.html',
                            filename=filename,
                            media_type=media_type,
                            media_src=media_src,
-                           file_exists=file_exists)
+                           file_exists=file_exists,
+                           direct=direct)
 
 
 @app.route('/download/<job_id>')

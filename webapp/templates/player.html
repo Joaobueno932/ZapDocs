@@ -4,6 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapDocs — {{ filename }}</title>
+  {% if file_exists and not direct %}
+  <script>
+    (function () {
+      var sep = window.location.search ? '&' : '?';
+      window.open(window.location.href + sep + 'direct=1', '_blank');
+      if (window.history.length > 1) window.history.back();
+      else window.close();
+    })();
+  </script>
+  {% endif %}
+  {% if file_exists and direct and media_type == 'documento' and filename.endswith('.pdf') %}
+  <script>window.location.replace("{{ media_src }}");</script>
+  {% endif %}
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
